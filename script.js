@@ -9,6 +9,7 @@
 let room, peerConnection;
 let roomName = "observable-" + prompt("Enter room name", "defaultRoom");
 let userName = prompt("Hey there, what's your name?", "Incognito") || "no_name";
+let counta = 0;
 
 // One instance of Scaledrone establishes a single connection, takes parameter 'CHANNEL_ID_FROM_DASHBOARD'.
 let drone = new ScaleDrone("yiS12Ts5RdNhebyM", {
@@ -50,7 +51,7 @@ drone.on("open", error => {
   room.on("members", members => {
     console.log("MEMBERS", members);
     const isOfferer = members.length === 2; // Returns boolean, where true means the client is the second person in the room.
-    startWebRTC(isOfferer);
+    startWebRTC(isOfferer, members);
   });
 
   // member_join is invoked whenver someone joins the room.
@@ -85,7 +86,7 @@ keyPress.addEventListener("keyup", function(event) {
   if (event.keyCode === 13) document.getElementById("sendMsgBtn").click();
 });
 
-function startWebRTC(isOfferer) {
+function startWebRTC(isOfferer, members) {
   // instances of RTCPeerConnection represent a connection between the local device and a remote peer.
   peerConnection = new RTCPeerConnection(configuration);
 
@@ -113,21 +114,35 @@ function startWebRTC(isOfferer) {
       remoteVideo.srcObject = stream;
     }
   };
-
-  // Capture video stream from local machine's webcam.
-  navigator.mediaDevices
-    .getUserMedia({
-      audio: true,
-      video: true
-    })
-    .then(stream => {
-      // Display your local video in #localVideo element
-      localVideo.srcObject = stream;
-      // Add your stream to be sent to the conneting peer
-      stream
-        .getTracks()
-        .forEach(track => peerConnection.addTrack(track, stream));
-    }, onError);
+    if(members.length === 1){
+        navigator.mediaDevices
+        .getDisplayMedia({
+          audio: true,
+          video: true
+        })
+        .then(stream => {
+          // Display your local video in #localVideo element
+          localVideo.srcObject = stream;
+          // Add your stream to be sent to the conneting peer
+          stream
+            .getTracks()
+            .forEach(track => peerConnection.addTrack(track, stream));
+        }, onError);
+    }else{
+        navigator.mediaDevices
+        .getUserMedia({
+          audio: true,
+          video: true
+        })
+        .then(stream => {
+          // Display your local video in #localVideo element
+          localVideo.srcObject = stream;
+          // Add your stream to be sent to the conneting peer
+          stream
+            .getTracks()
+            .forEach(track => peerConnection.addTrack(track, stream));
+        }, onError);
+    }
 
   // Listen to signaling data from Scaledrone
   room.on("data", (message, client) => {

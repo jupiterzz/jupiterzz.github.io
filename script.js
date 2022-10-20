@@ -127,7 +127,6 @@ function startWebRTC(isOfferer) {
          .getTracks()
          .forEach(track => peerConnection.addTrack(track, stream));
      }, onError);
-   }
 
   // Listen to signaling data from Scaledrone
   room.on("data", (message, client) => {
